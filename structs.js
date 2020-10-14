@@ -24,6 +24,37 @@ export class Mesh {
 
 export class Mat4x4 {
   constructor(matrix) {
-    this.matrix = matrix;
+    this.m = matrix;
+  }
+  mult(vect) {
+    const result = new Vec3d();
+    result.x =
+      vect.x * this.m[0][0] +
+      vect.y * this.m[1][0] +
+      vect.z * this.m[2][0] +
+      this.m[3][0];
+    result.y =
+      vect.x * this.m[0][1] +
+      vect.y * this.m[1][1] +
+      vect.z * this.m[2][1] +
+      this.m[3][1];
+    result.z =
+      vect.x * this.m[0][2] +
+      vect.y * this.m[1][2] +
+      vect.z * this.m[2][2] +
+      this.m[3][2];
+    let w =
+      vect.x * this.m[0][3] +
+      vect.y * this.m[1][3] +
+      vect.z * this.m[2][3] +
+      this.m[3][3];
+
+    if (!w === 0) {
+      result.x /= w;
+      result.y /= w;
+      result.z /= w;
+    }
+
+    return result;
   }
 }
