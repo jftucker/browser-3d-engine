@@ -17,6 +17,4 @@ matrix[3][2] = (-zFar * zNear) / (zFar - zNear);
 matrix[2][3] = 1;
 matrix[3][3] = 0;
 
-console.log(matrix);
-
 export const matProj = new Mat4x4(matrix);
