@@ -1,3 +1,5 @@
+import { draw } from "./utils.js";
+
 export class Vec3d {
   constructor(x, y, z) {
     this.x = x;
@@ -17,8 +19,16 @@ export class Mesh {
     this.tris = tris;
   }
 
-  render() {
-    this.tris.forEach(tri => console.log(tri));
+  render(matProj, canvas) {
+    this.tris.forEach(tri => {
+      console.log(tri);
+      const p1Proj = matProj.mult(tri.points[0]);
+      const p2Proj = matProj.mult(tri.points[1]);
+      const p3Proj = matProj.mult(tri.points[2]);
+
+      const triProjected = new Triangle(p1Proj, p2Proj, p3Proj);
+      draw(triProjected, canvas);
+    });
   }
 }
 
