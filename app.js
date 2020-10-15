@@ -1,4 +1,4 @@
-import { cube } from "./assets/cube.js";
+import { hireme } from "./assets/hireme.js";
 import { matProj } from "./matrix/matProj.js";
 import { Vec3d } from "./structs.js";
 
@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const render = (camera, matrix, canvas, startTime) => {
     let time = new Date();
-    cube.render(camera, matrix, canvas, (time - startTime) / 500);
+    hireme.render(camera, matrix, canvas, (time - startTime) / 500);
   };
-  setInterval(render, 0.1, camera, matProj, canvas, new Date());
+  setInterval(render, 10, camera, matProj, canvas, new Date());
 });

@@ -52,6 +52,9 @@ export class Mesh {
   constructor(tris) {
     this.tris = tris;
   }
+  static loadObj(objFile) {
+    console.log("reading file...");
+  }
 
   render(camera, matProj, canvas, frame) {
     const width = canvas.getAttribute("width");
@@ -60,9 +63,9 @@ export class Mesh {
     canvas.getContext("2d").clearRect(0, 0, width, height);
     this.tris.forEach(tri => {
       const triRotZ = tri.transform(Mat4x4.rotateZ, frame);
-      const triRotX = triRotZ.transform(Mat4x4.rotateX, frame * 0.5);
+      const triRotX = tri.transform(Mat4x4.rotateX, frame * 0.5);
       const triTran = triRotX.transform(
-        vect => new Vec3d(vect.x, vect.y, vect.z + 3)
+        vect => new Vec3d(vect.x, vect.y, vect.z + 5)
       );
       if (triTran.isVisibleTo(camera)) {
         const light = new Vec3d(0, 0, -1).normalize();
