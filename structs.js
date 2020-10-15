@@ -9,6 +9,9 @@ export class Vec3d {
   sub(vect) {
     return new Vec3d(this.x - vect.x, this.y - vect.y, this.z - vect.z);
   }
+  dot(vect) {
+    return this.x * vect.x + this.y * vect.y + this.z * vect.z;
+  }
   cross(vect) {
     return new Vec3d(
       this.y * vect.z - this.z * vect.y,
@@ -46,7 +49,7 @@ export class Mesh {
     this.tris = tris;
   }
 
-  render(matProj, canvas, frame) {
+  render(camera, matProj, canvas, frame) {
     const width = canvas.getAttribute("width");
     const height = canvas.getAttribute("height");
 
@@ -57,12 +60,14 @@ export class Mesh {
       const triTran = triRotX.transform(
         vect => new Vec3d(vect.x, vect.y, vect.z + 3)
       );
-      const triProj = triTran.transform(
-        (vect, matProj) => matProj.mult(vect),
-        matProj
-      );
+      if (triTran.normal().dot(triTran.points[0].normalize().sub(camera)) < 0) {
+        const triProj = triTran.transform(
+          (vect, matProj) => matProj.mult(vect),
+          matProj
+        );
 
-      draw(triProj, canvas);
+        draw(triProj, canvas);
+      }
     });
   }
 }
