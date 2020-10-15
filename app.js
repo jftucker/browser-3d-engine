@@ -4,5 +4,9 @@ import { matProj } from "./matrix/matProj.js";
 document.addEventListener("DOMContentLoaded", () => {
   let canvas = document.getElementById("canvas");
 
-  cube.render(matProj, canvas);
+  const render = (matrix, canvas, startTime) => {
+    let time = new Date();
+    cube.render(matrix, canvas, (time - startTime) / 500);
+  };
+  setInterval(render, 1, matProj, canvas, new Date());
 });
