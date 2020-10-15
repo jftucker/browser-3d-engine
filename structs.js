@@ -6,11 +6,33 @@ export class Vec3d {
     this.y = y;
     this.z = z;
   }
+  sub(vect) {
+    return new Vec3d(this.x - vect.x, this.y - vect.y, this.z - vect.z);
+  }
+  cross(vect) {
+    return new Vec3d(
+      this.y * vect.z - this.z * vect.y,
+      this.z * vect.x - this.x * vect.z,
+      this.x * vect.y - this.y * vect.x
+    );
+  }
+  normalize() {
+    const len = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+    return new Vec3d(this.x / len, this.y / len, this.z / len);
+  }
 }
 
 export class Triangle {
   constructor(p1, p2, p3) {
     this.points = [p1, p2, p3];
+  }
+  normal() {
+    const line1 = this.points[1].sub(this.points[0]);
+    const line2 = this.points[2].sub(this.points[0]);
+
+    let normal = line1.cross(line2);
+
+    return normal.normalize();
   }
   transform(func, ...args) {
     const result = [];
