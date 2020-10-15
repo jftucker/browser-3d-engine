@@ -12,6 +12,11 @@ export class Triangle {
   constructor(p1, p2, p3) {
     this.points = [p1, p2, p3];
   }
+  transform(func, ...args) {
+    const result = [];
+    this.points.forEach(point => result.push(func(point, ...args)));
+    return new Triangle(...result);
+  }
 }
 
 export class Mesh {
@@ -22,26 +27,17 @@ export class Mesh {
   render(matProj, canvas, frame) {
     canvas.getContext("2d").clearRect(0, 0, 800, 600);
     this.tris.forEach(tri => {
-      const p1RotZ = Mat4x4.rotateZ(tri.points[0], frame);
-      const p2RotZ = Mat4x4.rotateZ(tri.points[1], frame);
-      const p3RotZ = Mat4x4.rotateZ(tri.points[2], frame);
+      const triRotZ = tri.transform(Mat4x4.rotateZ, frame);
+      const triRotX = triRotZ.transform(Mat4x4.rotateX, frame * 0.5);
+      const triTran = triRotX.transform(
+        vect => new Vec3d(vect.x, vect.y, vect.z + 3)
+      );
+      const triProj = triTran.transform(
+        (vect, matProj) => matProj.mult(vect),
+        matProj
+      );
 
-      const p1RotX = Mat4x4.rotateX(p1RotZ, frame * 0.5);
-      const p2RotX = Mat4x4.rotateX(p2RotZ, frame * 0.5);
-      const p3RotX = Mat4x4.rotateX(p3RotZ, frame * 0.5);
-
-      const p1Trans = new Vec3d(p1RotX.x, p1RotX.y, p1RotX.z + 3);
-      const p2Trans = new Vec3d(p2RotX.x, p2RotX.y, p2RotX.z + 3);
-      const p3Trans = new Vec3d(p3RotX.x, p3RotX.y, p3RotX.z + 3);
-
-      const triTranslated = new Triangle(p1Trans, p2Trans, p3Trans);
-
-      const p1Proj = matProj.mult(triTranslated.points[0]);
-      const p2Proj = matProj.mult(triTranslated.points[1]);
-      const p3Proj = matProj.mult(triTranslated.points[2]);
-
-      const triProjected = new Triangle(p1Proj, p2Proj, p3Proj);
-      draw(triProjected, canvas);
+      draw(triProj, canvas);
     });
   }
 }

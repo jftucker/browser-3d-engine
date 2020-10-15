@@ -8,5 +8,5 @@ document.addEventListener("DOMContentLoaded", () => {
     let time = new Date();
     cube.render(matrix, canvas, (time - startTime) / 500);
   };
-  setInterval(render, 1, matProj, canvas, new Date());
+  setInterval(render, 0.1, matProj, canvas, new Date());
 });
