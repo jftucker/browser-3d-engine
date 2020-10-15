@@ -1,4 +1,4 @@
-import { draw } from "./utils.js";
+import { draw, drawWireframe } from "./utils.js";
 
 export class Vec3d {
   constructor(x, y, z) {
@@ -26,8 +26,9 @@ export class Vec3d {
 }
 
 export class Triangle {
-  constructor(p1, p2, p3) {
+  constructor(p1, p2, p3, color = [190, 190, 190]) {
     this.points = [p1, p2, p3];
+    this.color = color;
   }
   normal() {
     const line1 = this.points[1].sub(this.points[0]);
@@ -40,7 +41,10 @@ export class Triangle {
   transform(func, ...args) {
     const result = [];
     this.points.forEach(point => result.push(func(point, ...args)));
-    return new Triangle(...result);
+    return new Triangle(...result, this.color);
+  }
+  isVisibleTo(vect) {
+    return this.normal().dot(this.points[0].normalize().sub(vect)) < 0;
   }
 }
 
@@ -60,13 +64,17 @@ export class Mesh {
       const triTran = triRotX.transform(
         vect => new Vec3d(vect.x, vect.y, vect.z + 3)
       );
-      if (triTran.normal().dot(triTran.points[0].normalize().sub(camera)) < 0) {
+      if (triTran.isVisibleTo(camera)) {
+        const light = new Vec3d(0, 0, -1).normalize();
+        const lum = triTran.normal().dot(light);
+
         const triProj = triTran.transform(
           (vect, matProj) => matProj.mult(vect),
           matProj
         );
 
-        draw(triProj, canvas);
+        draw(triProj, canvas, lum);
+        // drawWireframe(triProj, canvas);
       }
     });
   }
