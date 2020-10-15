@@ -25,7 +25,10 @@ export class Mesh {
   }
 
   render(matProj, canvas, frame) {
-    canvas.getContext("2d").clearRect(0, 0, 800, 600);
+    const width = canvas.getAttribute("width");
+    const height = canvas.getAttribute("height");
+
+    canvas.getContext("2d").clearRect(0, 0, width, height);
     this.tris.forEach(tri => {
       const triRotZ = tri.transform(Mat4x4.rotateZ, frame);
       const triRotX = triRotZ.transform(Mat4x4.rotateX, frame * 0.5);
