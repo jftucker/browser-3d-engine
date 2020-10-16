@@ -1,5 +1,6 @@
 import { hireme } from "./assets/hireme.js";
 // import { cube } from "./assets/cube.js";
+import { axis } from "./assets/axis.js";
 import { Vec3d } from "./structs.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -9,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const render = (camera, light, canvas, startTime) => {
     let time = new Date();
-    hireme.render(camera, light, canvas, (time - startTime) / 500);
+    axis.render(camera, light, canvas, 0);
   };
 
   setInterval(render, 10, camera, light, canvas, new Date());
