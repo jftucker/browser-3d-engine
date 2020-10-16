@@ -1,15 +1,16 @@
 import { hireme } from "./assets/hireme.js";
-import { cube } from "./assets/cube.js";
-import { matProj } from "./matrix/matProj.js";
+// import { cube } from "./assets/cube.js";
 import { Vec3d } from "./structs.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  let canvas = document.getElementById("canvas");
+  const canvas = document.getElementById("canvas");
   const camera = new Vec3d(0, 0, 0);
+  const light = new Vec3d(0, 0, -1).normalize();
 
-  const render = (camera, matrix, canvas, startTime) => {
+  const render = (camera, light, canvas, startTime) => {
     let time = new Date();
-    hireme.render(camera, matrix, canvas, (time - startTime) / 500);
+    hireme.render(camera, light, canvas, (time - startTime) / 500);
   };
-  setInterval(render, 10, camera, matProj, canvas, new Date());
+
+  setInterval(render, 10, camera, light, canvas, new Date());
 });

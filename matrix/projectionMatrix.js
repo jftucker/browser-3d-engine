@@ -1,5 +1,3 @@
-import { Mat4x4 } from "../structs.js";
-
 const zNear = 0.1;
 const zFar = 1000;
 const fov = 90.0;
@@ -17,4 +15,4 @@ matrix[3][2] = (-zFar * zNear) / (zFar - zNear);
 matrix[2][3] = 1;
 matrix[3][3] = 0;
 
-export const matProj = new Mat4x4(matrix);
+export const projectionMatrix = matrix;

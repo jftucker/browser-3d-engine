@@ -1,13 +1,23 @@
 import { draw, drawWireframe } from "./utils.js";
 
 export class Vec3d {
-  constructor(x, y, z) {
+  constructor(x = 0, y = 0, z = 0, w = 1) {
     this.x = x;
     this.y = y;
     this.z = z;
+    this.w = w;
+  }
+  add(vect) {
+    return new Vec3d(this.x + vect.x, this.y + vect.y, this.z + vect.z);
   }
   sub(vect) {
     return new Vec3d(this.x - vect.x, this.y - vect.y, this.z - vect.z);
+  }
+  mul(k) {
+    return new Vec3d(this.x * k, this.y * k, this.z * k);
+  }
+  div(k) {
+    return new Vec3d(this.x / k, this.y / k, this.z / k);
   }
   dot(vect) {
     return this.x * vect.x + this.y * vect.y + this.z * vect.z;
@@ -19,8 +29,11 @@ export class Vec3d {
       this.x * vect.y - this.y * vect.x
     );
   }
+  len() {
+    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+  }
   normalize() {
-    const len = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+    const len = this.len();
     return new Vec3d(this.x / len, this.y / len, this.z / len);
   }
 }
@@ -41,11 +54,6 @@ export class Triangle {
 
     return normal.normalize();
   }
-  transform(func, ...args) {
-    const result = [];
-    this.points.forEach(point => result.push(func(point, ...args)));
-    return new Triangle(...result, this.color);
-  }
   isVisibleTo(vect) {
     return this.normal().dot(this.points[0].normalize().sub(vect)) < 0;
   }
@@ -55,34 +63,59 @@ export class Mesh {
   constructor(tris) {
     this.tris = tris;
   }
-  static loadObj(objFile) {
-    console.log("reading file...");
-  }
 
-  render(camera, matProj, canvas, frame) {
+  render(camera, light, canvas, frame) {
     const width = canvas.getAttribute("width");
     const height = canvas.getAttribute("height");
+    const matProj = Mat4x4.makeProjection(90, height / width, 0.1, 1000);
+    const matRotX = Mat4x4.makeRotateX(frame);
+    const matRotZ = Mat4x4.makeRotateZ(frame * 0.5);
+    const matTrans = Mat4x4.makeTranslation(0, 0, 8);
+
+    const matWorld = Mat4x4.makeIdentity()
+      .matrixMult(matRotZ)
+      .matrixMult(matRotX)
+      .matrixMult(matTrans);
 
     canvas.getContext("2d").clearRect(0, 0, width, height);
 
     const trisToRaster = [];
 
     this.tris.forEach(tri => {
-      const triRotZ = tri.transform(Mat4x4.rotateZ, frame);
-      const triRotX = tri.transform(Mat4x4.rotateX, frame * 0.5);
-      const triTran = triRotX.transform(
-        vect => new Vec3d(vect.x, vect.y, vect.z + 5)
+      const triTransformed = new Triangle(
+        matWorld.vectorMult(tri.points[0]),
+        matWorld.vectorMult(tri.points[1]),
+        matWorld.vectorMult(tri.points[2]),
+        tri.color
       );
-      if (triTran.isVisibleTo(camera)) {
-        const light = new Vec3d(0, 0, -1).normalize();
-        const lum = triTran.normal().dot(light);
 
-        const triProj = triTran.transform(
-          (vect, matProj) => matProj.mult(vect),
-          matProj
+      if (triTransformed.isVisibleTo(camera)) {
+        const lum = triTransformed.normal().dot(light);
+
+        const triProj = new Triangle(
+          matProj.vectorMult(triTransformed.points[0]),
+          matProj.vectorMult(triTransformed.points[1]),
+          matProj.vectorMult(triTransformed.points[2]),
+          triTransformed.color
         );
 
+        triProj.points[0] = triProj.points[0].div(triProj.points[0].w);
+        triProj.points[1] = triProj.points[1].div(triProj.points[1].w);
+        triProj.points[2] = triProj.points[2].div(triProj.points[2].w);
         triProj.lum = lum;
+
+        const OffsetView = new Vec3d(1, 1, 0);
+
+        triProj.points[0] = triProj.points[0].add(OffsetView);
+        triProj.points[1] = triProj.points[1].add(OffsetView);
+        triProj.points[2] = triProj.points[2].add(OffsetView);
+
+        triProj.points[0].x *= 0.5 * width;
+        triProj.points[0].y *= 0.5 * height;
+        triProj.points[1].x *= 0.5 * width;
+        triProj.points[1].y *= 0.5 * height;
+        triProj.points[2].x *= 0.5 * width;
+        triProj.points[2].y *= 0.5 * height;
 
         trisToRaster.push(triProj);
       }
@@ -98,7 +131,16 @@ export class Mat4x4 {
     this.m = matrix;
   }
 
-  static rotateX(vect, theta) {
+  static makeIdentity() {
+    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    m[0][0] = 1;
+    m[1][1] = 1;
+    m[2][2] = 1;
+    m[3][3] = 1;
+    return new Mat4x4(m);
+  }
+
+  static makeRotateX(theta) {
     let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
     m[0][0] = 1;
     m[1][1] = Math.cos(theta);
@@ -107,22 +149,22 @@ export class Mat4x4 {
     m[2][2] = Math.cos(theta);
     m[3][3] = 1;
 
-    const result = new Vec3d();
-    result.x = vect.x * m[0][0] + vect.y * m[1][0] + vect.z * m[2][0] + m[3][0];
-    result.y = vect.x * m[0][1] + vect.y * m[1][1] + vect.z * m[2][1] + m[3][1];
-    result.z = vect.x * m[0][2] + vect.y * m[1][2] + vect.z * m[2][2] + m[3][2];
-    let w = vect.x * m[0][3] + vect.y * m[1][3] + vect.z * m[2][3] + m[3][3];
-
-    if (!w == 0) {
-      result.x = result.x / w;
-      result.y /= w;
-      result.z /= w;
-    }
-
-    return result;
+    return new Mat4x4(m);
   }
 
-  static rotateZ(vect, theta) {
+  static makeRotateY(theta) {
+    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    m[0][0] = Math.cos(theta);
+    m[0][2] = Math.sin(theta);
+    m[2][0] = -Math.sin(theta);
+    m[1][1] = 1;
+    m[2][2] = Math.cos(theta);
+    m[3][3] = 1;
+
+    return new Mat4x4(m);
+  }
+
+  static makeRotateZ(theta) {
     let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
 
     m[0][0] = Math.cos(theta);
@@ -132,49 +174,75 @@ export class Mat4x4 {
     m[2][2] = 1;
     m[3][3] = 1;
 
-    const result = new Vec3d();
-    result.x = vect.x * m[0][0] + vect.y * m[1][0] + vect.z * m[2][0] + m[3][0];
-    result.y = vect.x * m[0][1] + vect.y * m[1][1] + vect.z * m[2][1] + m[3][1];
-    result.z = vect.x * m[0][2] + vect.y * m[1][2] + vect.z * m[2][2] + m[3][2];
-    let w = vect.x * m[0][3] + vect.y * m[1][3] + vect.z * m[2][3] + m[3][3];
-
-    if (!w == 0) {
-      result.x = result.x / w;
-      result.y /= w;
-      result.z /= w;
-    }
-
-    return result;
+    return new Mat4x4(m);
   }
 
-  mult(vect) {
+  static makeTranslation(x, y, z) {
+    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+
+    m[0][0] = 1;
+    m[1][1] = 1;
+    m[2][2] = 1;
+    m[3][3] = 1;
+    m[3][0] = x;
+    m[3][1] = y;
+    m[3][2] = z;
+
+    return new Mat4x4(m);
+  }
+
+  static makeProjection(fov, aspectRatio, zNear, zFar) {
+    const fovRad = 1 / Math.tan(((fov * 0.5) / 180) * Math.PI);
+    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+
+    m[0][0] = aspectRatio * fovRad;
+    m[1][1] = fovRad;
+    m[2][2] = zFar / (zFar - zNear);
+    m[3][2] = (-zFar * zNear) / (zFar - zNear);
+    m[2][3] = 1;
+    m[3][3] = 0;
+
+    return new Mat4x4(m);
+  }
+
+  matrixMult(m) {
+    let result = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+
+    for (let c = 0; c < 4; c++) {
+      for (let r = 0; r < 4; r++) {
+        result[r][c] =
+          this.m[r][0] * m.m[0][c] +
+          this.m[r][1] * m.m[1][c] +
+          this.m[r][2] * m.m[2][c] +
+          this.m[r][3] * m.m[3][c];
+      }
+    }
+
+    return new Mat4x4(result);
+  }
+
+  vectorMult(vect) {
     const result = new Vec3d();
     result.x =
       vect.x * this.m[0][0] +
       vect.y * this.m[1][0] +
       vect.z * this.m[2][0] +
-      this.m[3][0];
+      vect.w * this.m[3][0];
     result.y =
       vect.x * this.m[0][1] +
       vect.y * this.m[1][1] +
       vect.z * this.m[2][1] +
-      this.m[3][1];
+      vect.w * this.m[3][1];
     result.z =
       vect.x * this.m[0][2] +
       vect.y * this.m[1][2] +
       vect.z * this.m[2][2] +
-      this.m[3][2];
-    let w =
+      vect.w * this.m[3][2];
+    result.w =
       vect.x * this.m[0][3] +
       vect.y * this.m[1][3] +
       vect.z * this.m[2][3] +
-      this.m[3][3];
-
-    if (!w == 0) {
-      result.x = result.x / w;
-      result.y /= w;
-      result.z /= w;
-    }
+      vect.w * this.m[3][3];
 
     return result;
   }
