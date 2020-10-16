@@ -30,6 +30,9 @@ export class Triangle {
     this.points = [p1, p2, p3];
     this.color = color;
   }
+  depth() {
+    return (this.points[0].z + this.points[1].z + this.points[2].z) / 3;
+  }
   normal() {
     const line1 = this.points[1].sub(this.points[0]);
     const line2 = this.points[2].sub(this.points[0]);
@@ -61,6 +64,9 @@ export class Mesh {
     const height = canvas.getAttribute("height");
 
     canvas.getContext("2d").clearRect(0, 0, width, height);
+
+    const trisToRaster = [];
+
     this.tris.forEach(tri => {
       const triRotZ = tri.transform(Mat4x4.rotateZ, frame);
       const triRotX = tri.transform(Mat4x4.rotateX, frame * 0.5);
@@ -76,10 +82,14 @@ export class Mesh {
           matProj
         );
 
-        draw(triProj, canvas, lum);
-        // drawWireframe(triProj, canvas);
+        triProj.lum = lum;
+
+        trisToRaster.push(triProj);
       }
     });
+
+    trisToRaster.sort((a, b) => b.depth() - a.depth());
+    trisToRaster.forEach(tri => draw(tri, canvas));
   }
 }
 

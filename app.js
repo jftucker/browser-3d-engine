@@ -1,4 +1,5 @@
 import { hireme } from "./assets/hireme.js";
+import { cube } from "./assets/cube.js";
 import { matProj } from "./matrix/matProj.js";
 import { Vec3d } from "./structs.js";
 
