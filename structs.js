@@ -64,7 +64,8 @@ export class Mesh {
     this.tris = tris;
   }
 
-  render(camera, light, canvas, frame) {
+  render(camera, lookDir, light, canvas, frame) {
+    camera.update();
     const width = canvas.getAttribute("width");
     const height = canvas.getAttribute("height");
     const matProj = Mat4x4.makeProjection(90, height / width, 0.1, 1000);
@@ -73,9 +74,15 @@ export class Mesh {
     const matTrans = Mat4x4.makeTranslation(0, 0, 8);
 
     const matWorld = Mat4x4.makeIdentity()
-      .matrixMult(matRotZ)
       .matrixMult(matRotX)
+      .matrixMult(matRotZ)
       .matrixMult(matTrans);
+
+    const up = new Vec3d(0, -1, 0);
+    const target = camera.position.add(lookDir);
+
+    const matCamera = Mat4x4.PointAt(camera.position, target, up);
+    const matView = Mat4x4.quickInverse(matCamera);
 
     canvas.getContext("2d").clearRect(0, 0, width, height);
 
@@ -89,13 +96,20 @@ export class Mesh {
         tri.color
       );
 
-      if (triTransformed.isVisibleTo(camera)) {
+      if (triTransformed.isVisibleTo(camera.position)) {
         const lum = triTransformed.normal().dot(light);
 
+        const triViewed = new Triangle(
+          matView.vectorMult(triTransformed.points[0]),
+          matView.vectorMult(triTransformed.points[1]),
+          matView.vectorMult(triTransformed.points[2]),
+          triTransformed.color
+        );
+
         const triProj = new Triangle(
-          matProj.vectorMult(triTransformed.points[0]),
-          matProj.vectorMult(triTransformed.points[1]),
-          matProj.vectorMult(triTransformed.points[2]),
+          matProj.vectorMult(triViewed.points[0]),
+          matProj.vectorMult(triViewed.points[1]),
+          matProj.vectorMult(triViewed.points[2]),
           triTransformed.color
         );
 
@@ -201,6 +215,69 @@ export class Mat4x4 {
     m[3][2] = (-zFar * zNear) / (zFar - zNear);
     m[2][3] = 1;
     m[3][3] = 0;
+
+    return new Mat4x4(m);
+  }
+
+  static PointAt(pos, target, up) {
+    const newForward = target.sub(pos).normalize();
+    const a = newForward.mul(up.dot(newForward));
+    const newUp = up.sub(a).normalize();
+    const newRight = newUp.cross(newForward);
+
+    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+
+    m[0][0] = newRight.x;
+    m[0][1] = newRight.y;
+    m[0][2] = newRight.z;
+    m[0][3] = 0;
+    m[1][0] = newUp.x;
+    m[1][1] = newUp.y;
+    m[1][2] = newUp.z;
+    m[1][3] = 0;
+    m[2][0] = newForward.x;
+    m[2][1] = newForward.y;
+    m[2][2] = newForward.z;
+    m[2][3] = 0;
+    m[3][0] = pos.x;
+    m[3][1] = pos.y;
+    m[3][2] = pos.z;
+    m[3][3] = 1;
+
+    return new Mat4x4(m);
+  }
+
+  static quickInverse(matrix) {
+    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+
+    m[0][0] = matrix.m[0][0];
+    m[0][1] = matrix.m[1][0];
+    m[0][2] = matrix.m[2][0];
+    m[0][3] = 0;
+    m[1][0] = matrix.m[0][1];
+    m[1][1] = matrix.m[1][1];
+    m[1][2] = matrix.m[2][1];
+    m[1][3] = 0;
+    m[2][0] = matrix.m[0][2];
+    m[2][1] = matrix.m[1][2];
+    m[2][2] = matrix.m[2][2];
+    m[2][3] = 0;
+    m[3][0] = -(
+      matrix.m[3][0] * m[0][0] +
+      matrix.m[3][1] * m[1][0] +
+      matrix.m[3][2] * m[2][0]
+    );
+    m[3][1] = -(
+      matrix.m[3][0] * m[0][1] +
+      matrix.m[3][1] * m[1][1] +
+      matrix.m[3][2] * m[2][1]
+    );
+    m[3][2] = -(
+      matrix.m[3][0] * m[0][2] +
+      matrix.m[3][1] * m[1][2] +
+      matrix.m[3][2] * m[2][2]
+    );
+    m[3][3] = 1;
 
     return new Mat4x4(m);
   }
