@@ -64,14 +64,14 @@ export class Mesh {
     this.tris = tris;
   }
 
-  render(camera, lookDir, light, canvas, frame) {
+  render(camera, light, canvas, frame) {
     camera.update();
     const width = canvas.getAttribute("width");
     const height = canvas.getAttribute("height");
     const matProj = Mat4x4.makeProjection(90, height / width, 0.1, 1000);
     const matRotX = Mat4x4.makeRotateX(frame);
     const matRotZ = Mat4x4.makeRotateZ(frame * 0.5);
-    const matTrans = Mat4x4.makeTranslation(0, 0, 8);
+    const matTrans = Mat4x4.makeTranslation(0, 0, 0);
 
     const matWorld = Mat4x4.makeIdentity()
       .matrixMult(matRotX)
@@ -79,7 +79,10 @@ export class Mesh {
       .matrixMult(matTrans);
 
     const up = new Vec3d(0, -1, 0);
-    const target = camera.position.add(lookDir);
+    let target = new Vec3d(0, 0, 1);
+    const CameraRot = Mat4x4.makeRotateY(camera.yaw);
+    const lookDir = CameraRot.vectorMult(target);
+    target = camera.position.add(lookDir);
 
     const matCamera = Mat4x4.PointAt(camera.position, target, up);
     const matView = Mat4x4.quickInverse(matCamera);

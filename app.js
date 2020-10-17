@@ -7,7 +7,6 @@ import { Camera } from "./camera.js";
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("canvas");
   const camera = new Camera(0, 0, 0);
-  const lookDir = new Vec3d(0, 0, 1);
   const light = new Vec3d(0, 0, -1).normalize();
 
   function move(e) {
@@ -19,6 +18,14 @@ document.addEventListener("DOMContentLoaded", () => {
       camera.moveRight = true;
     } else if (e.keyCode === 40) {
       camera.moveDown = true;
+    } else if (e.keyCode === 65) {
+      camera.yawLeft = true;
+    } else if (e.keyCode === 68) {
+      camera.yawRight = true;
+    } else if (e.keyCode === 87) {
+      camera.moveForward = true;
+    } else if (e.keyCode === 83) {
+      camera.moveBackward = true;
     }
   }
 
@@ -31,16 +38,26 @@ document.addEventListener("DOMContentLoaded", () => {
       camera.moveRight = false;
     } else if (e.keyCode === 40) {
       camera.moveDown = false;
+    } else if (e.keyCode === 65) {
+      camera.yawLeft = false;
+    } else if (e.keyCode === 68) {
+      camera.yawRight = false;
+    } else if (e.keyCode === 87) {
+      camera.moveForward = false;
+    } else if (e.keyCode === 83) {
+      camera.moveBackward = false;
+    } else {
+      console.log(e.keyCode);
     }
   }
 
   document.addEventListener("keydown", move);
   document.addEventListener("keyup", stop);
 
-  const render = (camera, lookDir, light, canvas, startTime) => {
+  const render = (camera, light, canvas, startTime) => {
     let time = new Date();
-    axis.render(camera, lookDir, light, canvas, 0);
+    hireme.render(camera, light, canvas, 0);
   };
 
-  setInterval(render, 10, camera, lookDir, light, canvas, new Date());
+  setInterval(render, 10, camera, light, canvas, new Date());
 });
