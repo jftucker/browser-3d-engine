@@ -50,7 +50,7 @@ export class Vec3d {
 }
 
 export class Triangle {
-  constructor(p1, p2, p3, color = [190, 190, 190]) {
+  constructor(p1 = 0, p2 = 0, p3 = 0, color = [190, 190, 190]) {
     this.points = [p1, p2, p3];
     this.color = color;
   }
@@ -64,6 +64,29 @@ export class Triangle {
     let normal = line1.cross(line2);
 
     return normal.normalize();
+  }
+  transform(matrix) {
+    let pointsTransformed = this.points.map(point => matrix.vectorMult(point));
+
+    return new Triangle(...pointsTransformed, this.color);
+  }
+  scaleToView(width, height) {
+    const scaledTri = new Triangle();
+    const OffsetView = new Vec3d(1, 1, 0);
+    scaledTri.points[0] = this.points[0].div(this.points[0].w).add(OffsetView);
+    scaledTri.points[1] = this.points[1].div(this.points[1].w).add(OffsetView);
+    scaledTri.points[2] = this.points[2].div(this.points[2].w).add(OffsetView);
+
+    // scaledTri.points[0] = scaledTri.points[0].add(OffsetView);
+    // scaledTri.points[1] = scaledTri.points[1].add(OffsetView);
+    // scaledTri.points[2] = scaledTri.points[2].add(OffsetView);
+
+    scaledTri.points.forEach(point => {
+      point.x *= 0.5 * width;
+      point.y *= 0.5 * height;
+    });
+
+    return scaledTri;
   }
   isVisibleTo(vect) {
     return this.normal().dot(this.points[0].normalize().sub(vect)) < 0;
@@ -123,47 +146,17 @@ export class Mesh {
     const trisToRaster = [];
 
     this.tris.forEach(tri => {
-      const triTransformed = new Triangle(
-        matWorld.vectorMult(tri.points[0]),
-        matWorld.vectorMult(tri.points[1]),
-        matWorld.vectorMult(tri.points[2]),
-        tri.color
-      );
+      const triTransformed = tri.transform(matWorld);
 
       if (triTransformed.isVisibleTo(camera.position)) {
         const lum = triTransformed.normal().dot(light);
 
-        const triViewed = new Triangle(
-          matView.vectorMult(triTransformed.points[0]),
-          matView.vectorMult(triTransformed.points[1]),
-          matView.vectorMult(triTransformed.points[2]),
-          triTransformed.color
-        );
+        const triProj = triTransformed
+          .transform(matView)
+          .transform(matProj)
+          .scaleToView(width, height);
 
-        const triProj = new Triangle(
-          matProj.vectorMult(triViewed.points[0]),
-          matProj.vectorMult(triViewed.points[1]),
-          matProj.vectorMult(triViewed.points[2]),
-          triTransformed.color
-        );
-
-        triProj.points[0] = triProj.points[0].div(triProj.points[0].w);
-        triProj.points[1] = triProj.points[1].div(triProj.points[1].w);
-        triProj.points[2] = triProj.points[2].div(triProj.points[2].w);
         triProj.lum = lum;
-
-        const OffsetView = new Vec3d(1, 1, 0);
-
-        triProj.points[0] = triProj.points[0].add(OffsetView);
-        triProj.points[1] = triProj.points[1].add(OffsetView);
-        triProj.points[2] = triProj.points[2].add(OffsetView);
-
-        triProj.points[0].x *= 0.5 * width;
-        triProj.points[0].y *= 0.5 * height;
-        triProj.points[1].x *= 0.5 * width;
-        triProj.points[1].y *= 0.5 * height;
-        triProj.points[2].x *= 0.5 * width;
-        triProj.points[2].y *= 0.5 * height;
 
         trisToRaster.push(triProj);
       }
@@ -175,82 +168,84 @@ export class Mesh {
 }
 
 export class Mat4x4 {
-  constructor(matrix) {
+  constructor(
+    matrix = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+  ) {
     this.m = matrix;
   }
 
   static makeIdentity() {
-    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
-    m[0][0] = 1;
-    m[1][1] = 1;
-    m[2][2] = 1;
-    m[3][3] = 1;
-    return new Mat4x4(m);
+    let m = new Mat4x4();
+    m.m[0][0] = 1;
+    m.m[1][1] = 1;
+    m.m[2][2] = 1;
+    m.m[3][3] = 1;
+    return m;
   }
 
   static makeRotateX(theta) {
-    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
-    m[0][0] = 1;
-    m[1][1] = Math.cos(theta);
-    m[1][2] = Math.sin(theta);
-    m[2][1] = -Math.sin(theta);
-    m[2][2] = Math.cos(theta);
-    m[3][3] = 1;
+    let m = new Mat4x4();
+    m.m[0][0] = 1;
+    m.m[1][1] = Math.cos(theta);
+    m.m[1][2] = Math.sin(theta);
+    m.m[2][1] = -Math.sin(theta);
+    m.m[2][2] = Math.cos(theta);
+    m.m[3][3] = 1;
 
-    return new Mat4x4(m);
+    return m;
   }
 
   static makeRotateY(theta) {
-    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
-    m[0][0] = Math.cos(theta);
-    m[0][2] = Math.sin(theta);
-    m[2][0] = -Math.sin(theta);
-    m[1][1] = 1;
-    m[2][2] = Math.cos(theta);
-    m[3][3] = 1;
+    let m = new Mat4x4();
+    m.m[0][0] = Math.cos(theta);
+    m.m[0][2] = Math.sin(theta);
+    m.m[2][0] = -Math.sin(theta);
+    m.m[1][1] = 1;
+    m.m[2][2] = Math.cos(theta);
+    m.m[3][3] = 1;
 
-    return new Mat4x4(m);
+    return m;
   }
 
   static makeRotateZ(theta) {
-    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    let m = new Mat4x4();
 
-    m[0][0] = Math.cos(theta);
-    m[0][1] = Math.sin(theta);
-    m[1][0] = -Math.sin(theta);
-    m[1][1] = Math.cos(theta);
-    m[2][2] = 1;
-    m[3][3] = 1;
+    m.m[0][0] = Math.cos(theta);
+    m.m[0][1] = Math.sin(theta);
+    m.m[1][0] = -Math.sin(theta);
+    m.m[1][1] = Math.cos(theta);
+    m.m[2][2] = 1;
+    m.m[3][3] = 1;
 
-    return new Mat4x4(m);
+    return m;
   }
 
   static makeTranslation(vect) {
-    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    let m = new Mat4x4();
 
-    m[0][0] = 1;
-    m[1][1] = 1;
-    m[2][2] = 1;
-    m[3][3] = 1;
-    m[3][0] = vect.x;
-    m[3][1] = vect.y;
-    m[3][2] = vect.z;
+    m.m[0][0] = 1;
+    m.m[1][1] = 1;
+    m.m[2][2] = 1;
+    m.m[3][3] = 1;
+    m.m[3][0] = vect.x;
+    m.m[3][1] = vect.y;
+    m.m[3][2] = vect.z;
 
-    return new Mat4x4(m);
+    return m;
   }
 
   static makeProjection(fov, aspectRatio, zNear, zFar) {
     const fovRad = 1 / Math.tan(((fov * 0.5) / 180) * Math.PI);
-    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    let m = new Mat4x4();
 
-    m[0][0] = aspectRatio * fovRad;
-    m[1][1] = fovRad;
-    m[2][2] = zFar / (zFar - zNear);
-    m[3][2] = (-zFar * zNear) / (zFar - zNear);
-    m[2][3] = 1;
-    m[3][3] = 0;
+    m.m[0][0] = aspectRatio * fovRad;
+    m.m[1][1] = fovRad;
+    m.m[2][2] = zFar / (zFar - zNear);
+    m.m[3][2] = (-zFar * zNear) / (zFar - zNear);
+    m.m[2][3] = 1;
+    m.m[3][3] = 0;
 
-    return new Mat4x4(m);
+    return m;
   }
 
   static PointAt(pos, target, up) {
@@ -259,69 +254,69 @@ export class Mat4x4 {
     const newUp = up.sub(a).normalize();
     const newRight = newUp.cross(newForward);
 
-    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    let m = new Mat4x4();
 
-    m[0][0] = newRight.x;
-    m[0][1] = newRight.y;
-    m[0][2] = newRight.z;
-    m[0][3] = 0;
-    m[1][0] = newUp.x;
-    m[1][1] = newUp.y;
-    m[1][2] = newUp.z;
-    m[1][3] = 0;
-    m[2][0] = newForward.x;
-    m[2][1] = newForward.y;
-    m[2][2] = newForward.z;
-    m[2][3] = 0;
-    m[3][0] = pos.x;
-    m[3][1] = pos.y;
-    m[3][2] = pos.z;
-    m[3][3] = 1;
+    m.m[0][0] = newRight.x;
+    m.m[0][1] = newRight.y;
+    m.m[0][2] = newRight.z;
+    m.m[0][3] = 0;
+    m.m[1][0] = newUp.x;
+    m.m[1][1] = newUp.y;
+    m.m[1][2] = newUp.z;
+    m.m[1][3] = 0;
+    m.m[2][0] = newForward.x;
+    m.m[2][1] = newForward.y;
+    m.m[2][2] = newForward.z;
+    m.m[2][3] = 0;
+    m.m[3][0] = pos.x;
+    m.m[3][1] = pos.y;
+    m.m[3][2] = pos.z;
+    m.m[3][3] = 1;
 
-    return new Mat4x4(m);
+    return m;
   }
 
   static quickInverse(matrix) {
-    let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    let m = new Mat4x4();
 
-    m[0][0] = matrix.m[0][0];
-    m[0][1] = matrix.m[1][0];
-    m[0][2] = matrix.m[2][0];
-    m[0][3] = 0;
-    m[1][0] = matrix.m[0][1];
-    m[1][1] = matrix.m[1][1];
-    m[1][2] = matrix.m[2][1];
-    m[1][3] = 0;
-    m[2][0] = matrix.m[0][2];
-    m[2][1] = matrix.m[1][2];
-    m[2][2] = matrix.m[2][2];
-    m[2][3] = 0;
-    m[3][0] = -(
-      matrix.m[3][0] * m[0][0] +
-      matrix.m[3][1] * m[1][0] +
-      matrix.m[3][2] * m[2][0]
+    m.m[0][0] = matrix.m[0][0];
+    m.m[0][1] = matrix.m[1][0];
+    m.m[0][2] = matrix.m[2][0];
+    m.m[0][3] = 0;
+    m.m[1][0] = matrix.m[0][1];
+    m.m[1][1] = matrix.m[1][1];
+    m.m[1][2] = matrix.m[2][1];
+    m.m[1][3] = 0;
+    m.m[2][0] = matrix.m[0][2];
+    m.m[2][1] = matrix.m[1][2];
+    m.m[2][2] = matrix.m[2][2];
+    m.m[2][3] = 0;
+    m.m[3][0] = -(
+      matrix.m[3][0] * m.m[0][0] +
+      matrix.m[3][1] * m.m[1][0] +
+      matrix.m[3][2] * m.m[2][0]
     );
-    m[3][1] = -(
-      matrix.m[3][0] * m[0][1] +
-      matrix.m[3][1] * m[1][1] +
-      matrix.m[3][2] * m[2][1]
+    m.m[3][1] = -(
+      matrix.m[3][0] * m.m[0][1] +
+      matrix.m[3][1] * m.m[1][1] +
+      matrix.m[3][2] * m.m[2][1]
     );
-    m[3][2] = -(
-      matrix.m[3][0] * m[0][2] +
-      matrix.m[3][1] * m[1][2] +
-      matrix.m[3][2] * m[2][2]
+    m.m[3][2] = -(
+      matrix.m[3][0] * m.m[0][2] +
+      matrix.m[3][1] * m.m[1][2] +
+      matrix.m[3][2] * m.m[2][2]
     );
-    m[3][3] = 1;
+    m.m[3][3] = 1;
 
-    return new Mat4x4(m);
+    return m;
   }
 
   matrixMult(m) {
-    let result = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    let result = new Mat4x4();
 
     for (let c = 0; c < 4; c++) {
       for (let r = 0; r < 4; r++) {
-        result[r][c] =
+        result.m[r][c] =
           this.m[r][0] * m.m[0][c] +
           this.m[r][1] * m.m[1][c] +
           this.m[r][2] * m.m[2][c] +
@@ -329,7 +324,7 @@ export class Mat4x4 {
       }
     }
 
-    return new Mat4x4(result);
+    return result;
   }
 
   vectorMult(vect) {
