@@ -1,4 +1,4 @@
-import { draw, drawWireframe } from "./utils.js";
+import { draw } from "./utils.js";
 
 export class Vec3d {
   constructor(x = 0, y = 0, z = 0, w = 1) {
@@ -73,13 +73,10 @@ export class Triangle {
   scaleToView(width, height) {
     const scaledTri = new Triangle();
     const OffsetView = new Vec3d(1, 1, 0);
-    scaledTri.points[0] = this.points[0].div(this.points[0].w).add(OffsetView);
-    scaledTri.points[1] = this.points[1].div(this.points[1].w).add(OffsetView);
-    scaledTri.points[2] = this.points[2].div(this.points[2].w).add(OffsetView);
 
-    // scaledTri.points[0] = scaledTri.points[0].add(OffsetView);
-    // scaledTri.points[1] = scaledTri.points[1].add(OffsetView);
-    // scaledTri.points[2] = scaledTri.points[2].add(OffsetView);
+    scaledTri.points = this.points.map(point =>
+      point.div(point.w).add(OffsetView)
+    );
 
     scaledTri.points.forEach(point => {
       point.x *= 0.5 * width;
@@ -110,11 +107,11 @@ export class Mesh {
     camera.update();
     const width = canvas.getAttribute("width");
     const height = canvas.getAttribute("height");
-    const matRotX = Mat4x4.makeRotateX(thetaX);
-    const matRotY = Mat4x4.makeRotateY(thetaY);
-    const matRotZ = Mat4x4.makeRotateZ(thetaZ);
+    const matRotX = Mat4x4.makeRotationX(thetaX);
+    const matRotY = Mat4x4.makeRotationY(thetaY);
+    const matRotZ = Mat4x4.makeRotationZ(thetaZ);
     const matTrans = Mat4x4.makeTranslation(translate);
-    const matProj = Mat4x4.makeProjection(90, height / width, 0.1, 1000);
+    const matProj = Mat4x4.makeProjection(90, height / width, 1, 10);
 
     const matWorld = Mat4x4.makeIdentity()
       .matrixMult(matRotX)
@@ -123,11 +120,11 @@ export class Mesh {
       .matrixMult(matTrans);
 
     let target = new Vec3d(0, 0, 1);
-    const cameraRotationY = Mat4x4.makeRotateY(camera.yaw);
-    const cameraRotationX = Mat4x4.makeRotateX(
+    const cameraRotationY = Mat4x4.makeRotationY(camera.yaw);
+    const cameraRotationX = Mat4x4.makeRotationX(
       camera.pitch * Math.cos(camera.yaw)
     );
-    const cameraRotationZ = Mat4x4.makeRotateZ(
+    const cameraRotationZ = Mat4x4.makeRotationZ(
       camera.pitch * Math.sin(camera.yaw)
     );
 
@@ -183,7 +180,7 @@ export class Mat4x4 {
     return m;
   }
 
-  static makeRotateX(theta) {
+  static makeRotationX(theta) {
     let m = new Mat4x4();
     m.m[0][0] = 1;
     m.m[1][1] = Math.cos(theta);
@@ -195,7 +192,7 @@ export class Mat4x4 {
     return m;
   }
 
-  static makeRotateY(theta) {
+  static makeRotationY(theta) {
     let m = new Mat4x4();
     m.m[0][0] = Math.cos(theta);
     m.m[0][2] = Math.sin(theta);
@@ -207,7 +204,7 @@ export class Mat4x4 {
     return m;
   }
 
-  static makeRotateZ(theta) {
+  static makeRotationZ(theta) {
     let m = new Mat4x4();
 
     m.m[0][0] = Math.cos(theta);

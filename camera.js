@@ -1,7 +1,6 @@
 import { Vec3d } from "./structs.js";
 
 const VELOCITY = 0.3;
-const ROT_VELOCITY = 0.08;
 
 export class Camera {
   constructor(x, y, z, roll = 0, pitch = 0, yaw = 0) {
