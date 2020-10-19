@@ -2,12 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width | initial-scale=1.0">
   <script type="module" src="app.js" charset="UTF-8"></script>
   <link rel="stylesheet" href="style.css"></link>
   <title>3D engine</title>
 </head>
 <body>
-  <canvas id='canvas' height='720' width='1280' onclick=requestPointerLock()></canvas>
+  <div class='container'>
+    <canvas id='canvas' height='720' width='1280' onclick=requestPointerLock()></canvas>
+  </div>
+  <div class="container">W: forward | S: backward | A: left | D: right | SHIFT: down | SPACE: up | MOUSE: look | CLICK to lock cursor</div>
 </body>
 </html>

@@ -1,4 +1,4 @@
-import { cube } from "./assets/cube.js";
+import { hireme } from "./assets/hireme.js";
 import { Vec3d } from "./structs.js";
 import { Camera } from "./camera.js";
 import { command } from "./interface.js";
@@ -17,8 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("keyup", command(camera));
   document.addEventListener("mousemove", command(camera));
 
+  hireme.tris.forEach(tri => (tri.color = [200, 100, 50]));
+
   const render = args => {
-    cube.render(args);
+    hireme.render(args);
   };
 
   setInterval(render, 1000 / 60, { camera, light, canvas, thetaY: Math.PI });

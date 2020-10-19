@@ -1,4 +1,4 @@
-import { draw, drawWireframe } from "./utils.js";
+import { draw } from "./utils.js";
 
 export class Vec3d {
   constructor(x = 0, y = 0, z = 0, w = 1) {
