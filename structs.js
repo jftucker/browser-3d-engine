@@ -36,6 +36,17 @@ export class Vec3d {
     const len = this.len();
     return new Vec3d(this.x / len, this.y / len, this.z / len);
   }
+  static intersectPlane(planePosition, planeNormal, lineStart, lineEnd) {
+    const normal = planeNormal.normalize();
+    const plane_d = -normal.dot(planePosition);
+    const ad = lineStart.dot(normal);
+    const bd = lineEnd.dot(normal);
+    const t = (-plane_d - ad) / (bd - ad);
+    const lineStartToEnd = lineEnd.sub(lineStart);
+    const lineToIntersect = lineStartToEnd.mul(t);
+
+    return lineStart.add(lineToIntersect);
+  }
 }
 
 export class Triangle {
@@ -64,27 +75,38 @@ export class Mesh {
     this.tris = tris;
   }
 
-  render(camera, light, canvas, frame) {
+  render({
+    camera,
+    light,
+    canvas,
+    thetaX = 0,
+    thetaY = 0,
+    thetaZ = 0,
+    translate = new Vec3d(0, 0, 0),
+  }) {
     camera.update();
     const width = canvas.getAttribute("width");
     const height = canvas.getAttribute("height");
+    const matRotX = Mat4x4.makeRotateX(thetaX);
+    const matRotY = Mat4x4.makeRotateY(thetaY);
+    const matRotZ = Mat4x4.makeRotateZ(thetaZ);
+    const matTrans = Mat4x4.makeTranslation(translate);
     const matProj = Mat4x4.makeProjection(90, height / width, 0.1, 1000);
-    const matRotX = Mat4x4.makeRotateX(frame);
-    const matRotZ = Mat4x4.makeRotateZ(frame * 0.5);
-    const matTrans = Mat4x4.makeTranslation(0, 0, 0);
 
     const matWorld = Mat4x4.makeIdentity()
       .matrixMult(matRotX)
+      .matrixMult(matRotY)
       .matrixMult(matRotZ)
       .matrixMult(matTrans);
 
-    const up = new Vec3d(0, -1, 0);
     let target = new Vec3d(0, 0, 1);
-    const CameraRot = Mat4x4.makeRotateY(camera.yaw);
-    const lookDir = CameraRot.vectorMult(target);
-    target = camera.position.add(lookDir);
+    const CameraRot = Mat4x4.makeRotateY(camera.yaw).matrixMult(
+      Mat4x4.makeRotateX(camera.pitch)
+    );
+    camera.lookDir = CameraRot.vectorMult(target);
+    target = camera.position.add(camera.lookDir);
 
-    const matCamera = Mat4x4.PointAt(camera.position, target, up);
+    const matCamera = Mat4x4.PointAt(camera.position, target, camera.up);
     const matView = Mat4x4.quickInverse(matCamera);
 
     canvas.getContext("2d").clearRect(0, 0, width, height);
@@ -194,16 +216,16 @@ export class Mat4x4 {
     return new Mat4x4(m);
   }
 
-  static makeTranslation(x, y, z) {
+  static makeTranslation(vect) {
     let m = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
 
     m[0][0] = 1;
     m[1][1] = 1;
     m[2][2] = 1;
     m[3][3] = 1;
-    m[3][0] = x;
-    m[3][1] = y;
-    m[3][2] = z;
+    m[3][0] = vect.x;
+    m[3][1] = vect.y;
+    m[3][2] = vect.z;
 
     return new Mat4x4(m);
   }
