@@ -1,4 +1,4 @@
-import { draw } from "./utils.js";
+import { draw, drawWireframe } from "./utils.js";
 
 export class Vec3d {
   constructor(x = 0, y = 0, z = 0, w = 1) {
@@ -149,7 +149,7 @@ export class Triangle {
   }
 
   scaleToView(width, height) {
-    const scaledTri = new Triangle();
+    const scaledTri = new Triangle(0, 0, 0, this.color);
     const OffsetView = new Vec3d(1, 1, 0);
 
     scaledTri.points = this.points.map(point =>
@@ -229,19 +229,58 @@ export class Mesh {
 
         const triViewed = triTransformed.transform(matView);
 
-        const clipped = triViewed.clipAgainstPlane(
+        const clippedAgainstView = triViewed.clipAgainstPlane(
           new Vec3d(0, 0, 0.1),
           new Vec3d(0, 0, 1)
         );
 
-        clipped.forEach(triClipped => {
-          const triProjected = triClipped.transform(matProj);
+        clippedAgainstView.forEach(tri => {
+          const triScaled = tri.transform(matProj).scaleToView(width, height);
 
-          const triScaled = triProjected.scaleToView(width, height);
+          let queue = [];
 
-          triScaled.lum = lum;
+          queue.push(
+            ...triScaled.clipAgainstPlane(
+              new Vec3d(0, 0, 0),
+              new Vec3d(0, 1, 0)
+            )
+          );
 
-          trisToRaster.push(triScaled);
+          queue.forEach(tri => {
+            queue.push(
+              ...queue
+                .shift()
+                .clipAgainstPlane(
+                  new Vec3d(0, height - 1, 0),
+                  new Vec3d(0, -1, 0)
+                )
+            );
+          });
+
+          queue.forEach(tri => {
+            queue.push(
+              ...queue
+                .shift()
+                .clipAgainstPlane(new Vec3d(0, 0, 0), new Vec3d(1, 0, 0))
+            );
+          });
+
+          queue.forEach(tri => {
+            queue.push(
+              ...queue
+                .shift()
+                .clipAgainstPlane(
+                  new Vec3d(width - 1, 0, 0),
+                  new Vec3d(-1, 0, 0)
+                )
+            );
+          });
+
+          queue.forEach(tri => {
+            tri.lum = lum;
+
+            trisToRaster.push(tri);
+          });
         });
       }
     });
