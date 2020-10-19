@@ -30,7 +30,7 @@ export class Camera {
         this.lookDir
           .cross(this.up)
           .normalize()
-          .mul(VELOCITY)
+          .mult(VELOCITY)
       );
     }
     if (this.moveRight) {
@@ -38,14 +38,14 @@ export class Camera {
         this.lookDir
           .cross(this.up)
           .normalize()
-          .mul(VELOCITY)
+          .mult(VELOCITY)
       );
     }
     if (this.moveForward) {
-      this.position = this.position.add(this.lookDir.mul(VELOCITY));
+      this.position = this.position.add(this.lookDir.mult(VELOCITY));
     }
     if (this.moveBackward) {
-      this.position = this.position.sub(this.lookDir.mul(VELOCITY));
+      this.position = this.position.sub(this.lookDir.mult(VELOCITY));
     }
   }
 }

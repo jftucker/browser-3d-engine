@@ -13,7 +13,7 @@ export class Vec3d {
   sub(vect) {
     return new Vec3d(this.x - vect.x, this.y - vect.y, this.z - vect.z);
   }
-  mul(k) {
+  mult(k) {
     return new Vec3d(this.x * k, this.y * k, this.z * k);
   }
   div(k) {
@@ -43,20 +43,96 @@ export class Vec3d {
     const bd = lineEnd.dot(normal);
     const t = (-plane_d - ad) / (bd - ad);
     const lineStartToEnd = lineEnd.sub(lineStart);
-    const lineToIntersect = lineStartToEnd.mul(t);
+    const lineToIntersect = lineStartToEnd.mult(t);
 
     return lineStart.add(lineToIntersect);
+  }
+  distToPlane(planeNormal, planePosition) {
+    return (
+      planeNormal.x * this.x +
+      planeNormal.y * this.y +
+      planeNormal.z * this.z -
+      planeNormal.dot(planePosition)
+    );
   }
 }
 
 export class Triangle {
-  constructor(p1 = 0, p2 = 0, p3 = 0, color = [190, 190, 190]) {
-    this.points = [p1, p2, p3];
+  constructor(p0 = 0, p1 = 0, p2 = 0, color = [190, 190, 190]) {
+    this.points = [p0, p1, p2];
     this.color = color;
   }
+
+  clipAgainstPlane(planePosition, planeNormal) {
+    const tris = [];
+    const normal = planeNormal.normalize();
+
+    const insidePoints = [];
+    const outsidePoints = [];
+
+    const d0 = this.points[0].distToPlane(normal, planePosition);
+    const d1 = this.points[1].distToPlane(normal, planePosition);
+    const d2 = this.points[2].distToPlane(normal, planePosition);
+
+    d0 >= 0
+      ? insidePoints.push(this.points[0])
+      : outsidePoints.push(this.points[0]);
+    d1 >= 0
+      ? insidePoints.push(this.points[1])
+      : outsidePoints.push(this.points[1]);
+    d2 >= 0
+      ? insidePoints.push(this.points[2])
+      : outsidePoints.push(this.points[2]);
+
+    if (insidePoints.length === 3) {
+      tris.push(this);
+    }
+
+    if (insidePoints.length === 1 && outsidePoints.length == 2) {
+      const p0 = insidePoints[0];
+      const p1 = Vec3d.intersectPlane(
+        planePosition,
+        normal,
+        insidePoints[0],
+        outsidePoints[0]
+      );
+      const p2 = Vec3d.intersectPlane(
+        planePosition,
+        normal,
+        insidePoints[0],
+        outsidePoints[1]
+      );
+      tris.push(new Triangle(p0, p1, p2, this.color));
+    }
+
+    if (insidePoints.length === 2 && outsidePoints.length == 1) {
+      const p0 = insidePoints[0];
+      const p1 = insidePoints[1];
+
+      let p2 = Vec3d.intersectPlane(
+        planePosition,
+        normal,
+        insidePoints[0],
+        outsidePoints[0]
+      );
+      tris.push(new Triangle(p0, p1, p2, this.color));
+
+      p2 = Vec3d.intersectPlane(
+        planePosition,
+        normal,
+        insidePoints[1],
+        outsidePoints[0]
+      );
+      tris.push(new Triangle(p1, tris[0].points[2], p2, this.color));
+    }
+
+    return tris;
+  }
+
   depth() {
     return (this.points[0].z + this.points[1].z + this.points[2].z) / 3;
   }
+
   normal() {
     const line1 = this.points[1].sub(this.points[0]);
     const line2 = this.points[2].sub(this.points[0]);
@@ -65,11 +141,13 @@ export class Triangle {
 
     return normal.normalize();
   }
+
   transform(matrix) {
     let pointsTransformed = this.points.map(point => matrix.vectorMult(point));
 
     return new Triangle(...pointsTransformed, this.color);
   }
+
   scaleToView(width, height) {
     const scaledTri = new Triangle();
     const OffsetView = new Vec3d(1, 1, 0);
@@ -85,6 +163,7 @@ export class Triangle {
 
     return scaledTri;
   }
+
   isVisibleTo(vect) {
     return this.normal().dot(this.points[0].normalize().sub(vect)) < 0;
   }
@@ -111,7 +190,7 @@ export class Mesh {
     const matRotY = Mat4x4.makeRotationY(thetaY);
     const matRotZ = Mat4x4.makeRotationZ(thetaZ);
     const matTrans = Mat4x4.makeTranslation(translate);
-    const matProj = Mat4x4.makeProjection(90, height / width, 1, 10);
+    const matProj = Mat4x4.makeProjection(90, height / width, 0.1, 1000);
 
     const matWorld = Mat4x4.makeIdentity()
       .matrixMult(matRotX)
@@ -148,14 +227,22 @@ export class Mesh {
       if (triTransformed.isVisibleTo(camera.position)) {
         const lum = triTransformed.normal().dot(light);
 
-        const triProj = triTransformed
-          .transform(matView)
-          .transform(matProj)
-          .scaleToView(width, height);
+        const triViewed = triTransformed.transform(matView);
 
-        triProj.lum = lum;
+        const clipped = triViewed.clipAgainstPlane(
+          new Vec3d(0, 0, 0.1),
+          new Vec3d(0, 0, 1)
+        );
 
-        trisToRaster.push(triProj);
+        clipped.forEach(triClipped => {
+          const triProjected = triClipped.transform(matProj);
+
+          const triScaled = triProjected.scaleToView(width, height);
+
+          triScaled.lum = lum;
+
+          trisToRaster.push(triScaled);
+        });
       }
     });
 
@@ -247,7 +334,7 @@ export class Mat4x4 {
 
   static PointAt(pos, target, up) {
     const newForward = target.sub(pos).normalize();
-    const a = newForward.mul(up.dot(newForward));
+    const a = newForward.mult(up.dot(newForward));
     const newUp = up.sub(a).normalize();
     const newRight = newUp.cross(newForward);
 

@@ -21,5 +21,5 @@ document.addEventListener("DOMContentLoaded", () => {
     hireme.render(args);
   };
 
-  setInterval(render, 10, { camera, light, canvas, thetaY: Math.PI });
+  setInterval(render, 1000 / 60, { camera, light, canvas, thetaY: Math.PI });
 });
