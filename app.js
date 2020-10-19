@@ -8,6 +8,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const camera = new Camera(0, 0, -10);
   const light = new Vec3d(0, 0, -1).normalize();
 
+  canvas.requestPointerLock =
+    canvas.requestPointerLock ||
+    canvas.mozRequestPointerLock ||
+    canvas.webkitRequestPointerLock;
+
   document.addEventListener("keydown", command(camera));
   document.addEventListener("keyup", command(camera));
   document.addEventListener("mousemove", command(camera));

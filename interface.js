@@ -7,11 +7,11 @@ export function command(camera) {
   return e => {
     if (e.keyCode === KEYMAP.A) {
       camera.moveLeft = isPressed(e);
-    } else if (e.keyCode === KEYMAP.UP) {
+    } else if (e.keyCode === KEYMAP.SPACE) {
       camera.moveUp = isPressed(e);
     } else if (e.keyCode === KEYMAP.D) {
       camera.moveRight = isPressed(e);
-    } else if (e.keyCode === KEYMAP.DOWN) {
+    } else if (e.keyCode === KEYMAP.LSHIFT) {
       camera.moveDown = isPressed(e);
     } else if (e.keyCode === KEYMAP.W) {
       camera.moveForward = isPressed(e);

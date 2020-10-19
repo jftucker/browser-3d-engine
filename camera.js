@@ -15,7 +15,9 @@ export class Camera {
   }
   rotate(e) {
     this.yaw += e.movementX / 500;
-    this.pitch += e.movementY / 200;
+    if (Math.abs(this.pitch + e.movementY / 400) < Math.PI / 2) {
+      this.pitch += e.movementY / 400;
+    }
   }
   update() {
     if (this.moveUp) {

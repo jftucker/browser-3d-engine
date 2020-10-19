@@ -100,10 +100,19 @@ export class Mesh {
       .matrixMult(matTrans);
 
     let target = new Vec3d(0, 0, 1);
-    const CameraRot = Mat4x4.makeRotateY(camera.yaw).matrixMult(
-      Mat4x4.makeRotateX(camera.pitch)
+    const cameraRotationY = Mat4x4.makeRotateY(camera.yaw);
+    const cameraRotationX = Mat4x4.makeRotateX(
+      camera.pitch * Math.cos(camera.yaw)
     );
-    camera.lookDir = CameraRot.vectorMult(target);
+    const cameraRotationZ = Mat4x4.makeRotateZ(
+      camera.pitch * Math.sin(camera.yaw)
+    );
+
+    camera.lookDir = cameraRotationY
+      .matrixMult(cameraRotationX)
+      .matrixMult(cameraRotationZ)
+      .vectorMult(target);
+
     target = camera.position.add(camera.lookDir);
 
     const matCamera = Mat4x4.PointAt(camera.position, target, camera.up);
