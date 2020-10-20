@@ -6,7 +6,7 @@ import { configureCanvas } from "./utils.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const camera = new Camera(...config.CAMERA.STARTING_POSITION);
-  const light = new Vec3d(0, 0, -1);
+  const light = new Vec3d(-0.5, -0.5, -1);
   const canvas = configureCanvas("canvas");
 
   const render = args => {

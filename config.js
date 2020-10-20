@@ -9,7 +9,7 @@ export const config = {
     LEFT: 37,
     RIGHT: 39,
     SPACE: 32,
-    LSHIFT: 16,
+    SHIFT: 16,
   },
   VELOCITY: 0.3,
   MOUSE_INPUT_SCALING: {

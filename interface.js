@@ -3,22 +3,19 @@ function isPressed(e) {
   return e.type === "keydown";
 }
 
-const KEYMAP = config.KEYMAP;
+const INPUT = {
+  [config.KEYMAP.A]: "moveLeft",
+  [config.KEYMAP.SPACE]: "moveUp",
+  [config.KEYMAP.D]: "moveRight",
+  [config.KEYMAP.SHIFT]: "moveDown",
+  [config.KEYMAP.W]: "moveForward",
+  [config.KEYMAP.S]: "moveBackward",
+};
 
 export function command(camera) {
   return e => {
-    if (e.keyCode === KEYMAP.A) {
-      camera.moveLeft = isPressed(e);
-    } else if (e.keyCode === KEYMAP.SPACE) {
-      camera.moveUp = isPressed(e);
-    } else if (e.keyCode === KEYMAP.D) {
-      camera.moveRight = isPressed(e);
-    } else if (e.keyCode === KEYMAP.LSHIFT) {
-      camera.moveDown = isPressed(e);
-    } else if (e.keyCode === KEYMAP.W) {
-      camera.moveForward = isPressed(e);
-    } else if (e.keyCode === KEYMAP.S) {
-      camera.moveBackward = isPressed(e);
+    if (e.type === "keydown" || e.type === "keyup") {
+      camera[INPUT[e.keyCode]] = isPressed(e);
     } else if (e.type === "mousemove") {
       camera.rotate(e);
     }
