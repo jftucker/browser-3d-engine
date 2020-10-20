@@ -22,7 +22,7 @@ export const config = {
   ZNEAR: 0.1,
   ZFAR: 1000,
   CANVAS: {
-    WIDTH: 1280,
-    HEIGHT: 720,
+    WIDTH: window.innerWidth,
+    HEIGHT: window.innerHeight - 50,
   },
 };
