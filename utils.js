@@ -1,3 +1,5 @@
+import { config } from "./config.js";
+
 export function drawWireframe(triangle, canvas) {
   if (canvas.getContext) {
     var ctx = canvas.getContext("2d");
@@ -25,4 +27,18 @@ export function draw(triangle, canvas) {
       .color[1] * triangle.lum}, ${triangle.color[2] * triangle.lum}, 1)`;
     ctx.fill();
   }
+}
+
+export function configureCanvas(canvasId) {
+  const canvas = document.getElementById(canvasId);
+
+  canvas.requestPointerLock =
+    canvas.requestPointerLock ||
+    canvas.mozRequestPointerLock ||
+    canvas.webkitRequestPointerLock;
+
+  canvas.setAttribute("width", config.CANVAS.WIDTH);
+  canvas.setAttribute("height", config.CANVAS.HEIGHT);
+
+  return canvas;
 }

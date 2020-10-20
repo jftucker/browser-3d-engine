@@ -23,6 +23,8 @@ export const config = {
   ZFAR: 1000,
   CANVAS: {
     WIDTH: window.innerWidth,
-    HEIGHT: window.innerHeight - 50,
+    HEIGHT: window.innerHeight - 150,
   },
+  CAMERA: { STARTING_POSITION: [0, 0, -5] },
+  MILLISECONDS_PER_FRAME: 1000 / 60,
 };

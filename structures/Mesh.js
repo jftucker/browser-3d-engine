@@ -19,36 +19,22 @@ export class Mesh {
   }) {
     camera.update();
 
-    const matRotX = Mat4x4.makeRotationX(thetaX);
-    const matRotY = Mat4x4.makeRotationY(thetaY);
-    const matRotZ = Mat4x4.makeRotationZ(thetaZ);
-    const matTrans = Mat4x4.makeTranslation(translate);
-    const matProj = Mat4x4.makeProjection(
+    const projection = Mat4x4.makeProjection(
       config.FOV,
       config.CANVAS.HEIGHT / config.CANVAS.WIDTH,
       config.ZNEAR,
       config.ZFAR
     );
 
-    const matWorld = Mat4x4.makeIdentity()
-      .matrixMult(matRotX)
-      .matrixMult(matRotY)
-      .matrixMult(matRotZ)
-      .matrixMult(matTrans);
+    const worldMatrix = Mat4x4.makeIdentity()
+      .matrixMult(Mat4x4.makeRotationX(thetaX))
+      .matrixMult(Mat4x4.makeRotationY(thetaY))
+      .matrixMult(Mat4x4.makeRotationZ(thetaZ))
+      .matrixMult(Mat4x4.makeTranslation(translate));
 
     let target = new Vec3d(...config.FORWARD_DIR);
-    const cameraRotationY = Mat4x4.makeRotationY(camera.yaw);
-    const cameraRotationX = Mat4x4.makeRotationX(
-      camera.pitch * Math.cos(camera.yaw)
-    );
-    const cameraRotationZ = Mat4x4.makeRotationZ(
-      camera.pitch * Math.sin(camera.yaw)
-    );
 
-    camera.lookDir = cameraRotationY
-      .matrixMult(cameraRotationX)
-      .matrixMult(cameraRotationZ)
-      .vectorMult(target);
+    camera.look(target);
 
     target = camera.position.add(camera.lookDir);
 
@@ -62,10 +48,10 @@ export class Mesh {
     const trisToRaster = [];
 
     this.tris.forEach(tri => {
-      const triTransformed = tri.transform(matWorld);
+      const triTransformed = tri.transform(worldMatrix);
 
       if (triTransformed.isVisibleTo(camera.position)) {
-        const lum = triTransformed.normal().dot(light);
+        const lum = triTransformed.normal().dot(light.normalize());
 
         const triViewed = triTransformed.transform(matView);
 
@@ -76,7 +62,7 @@ export class Mesh {
 
         clippedAgainstView.forEach(tri => {
           const triScaled = tri
-            .transform(matProj)
+            .transform(projection)
             .scaleToView(config.CANVAS.WIDTH, config.CANVAS.HEIGHT);
 
           const queue = [triScaled];
