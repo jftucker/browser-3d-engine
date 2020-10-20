@@ -1,4 +1,6 @@
-import { Vec3d, Triangle, Mesh } from "../structs.js";
+import { Mesh } from "../structures/Mesh.js";
+import { Triangle } from "../structures/Triangle.js";
+import { Vec3d } from "../structures/Vec3d.js";
 
 const vectors = [
   0,

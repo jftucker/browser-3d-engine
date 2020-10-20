@@ -1,4 +1,6 @@
-import { Vec3d, Triangle, Mesh } from "../structs.js";
+import { Mesh } from "../structures/Mesh.js";
+import { Triangle } from "../structures/Triangle";
+import { Vec3d } from "../structures/Vec3d";
 export const cube = new Mesh([
   // South
   new Triangle(

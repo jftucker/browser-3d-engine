@@ -1,12 +1,16 @@
 import { hireme } from "./assets/hireme.js";
-import { Vec3d } from "./structs.js";
+import { Vec3d } from "./structures/Vec3d.js";
 import { Camera } from "./camera.js";
 import { command } from "./interface.js";
+import { config } from "./config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("canvas");
   const camera = new Camera(0, 0, -10);
   const light = new Vec3d(0, 0, -1).normalize();
+
+  canvas.setAttribute("width", config.CANVAS.WIDTH);
+  canvas.setAttribute("height", config.CANVAS.HEIGHT);
 
   canvas.requestPointerLock =
     canvas.requestPointerLock ||

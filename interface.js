@@ -1,7 +1,9 @@
-import { KEYMAP } from "./config.js";
+import { config } from "./config.js";
 function isPressed(e) {
   return e.type === "keydown";
 }
+
+const KEYMAP = config.KEYMAP;
 
 export function command(camera) {
   return e => {
