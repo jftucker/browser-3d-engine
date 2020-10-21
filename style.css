@@ -16,14 +16,15 @@ body {
 }
 
 .text-box {
-  margin: 5px;
-  padding: 5px;
+  margin: 10px;
+  padding: 10px;
   border: orange;
   border-style: solid;
-  background: rgba(235, 207, 118, 0.3);
+  background: rgba(255, 249, 227, 0.774);
 }
 
 span {
+  padding: 7px;
   color: rgb(65, 34, 0);
 }
 
@@ -40,4 +41,8 @@ a:hover {
 a:visited {
   color: rgb(170, 91, 0);
   text-decoration: none;
+}
+
+#why {
+  display: none;
 }

@@ -1,4 +1,3 @@
-import { draw } from "../utils.js";
 import { Vec3d } from "./Vec3d.js";
 import { Mat4x4 } from "./Mat4x4.js";
 import { config } from "../config.js";
@@ -18,7 +17,7 @@ export class Mesh {
     this.translate = translate;
   }
 
-  render({ camera, light, canvas, trisToRaster }) {
+  render({ camera, light, trisToRaster }) {
     const projection = Mat4x4.makeProjection(
       config.FOV,
       config.CANVAS.HEIGHT / config.CANVAS.WIDTH,

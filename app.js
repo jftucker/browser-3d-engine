@@ -6,6 +6,16 @@ import { config } from "./config.js";
 import { configureCanvas } from "./utils.js";
 import { Rasterizer } from "./rasterizer.js";
 
+function toggleVisibility(id) {
+  const element = document.getElementById(id);
+
+  element.style.display === "block"
+    ? (element.style.display = "none")
+    : (element.style.display = "block");
+}
+
+document.toggleVisibility = toggleVisibility;
+
 document.addEventListener("DOMContentLoaded", () => {
   const camera = new Camera(
     ...config.CAMERA.STARTING_POSITION,
