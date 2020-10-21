@@ -11955,4 +11955,7 @@ const hireme = new Mesh([
 
 hireme.tris.forEach(tri => (tri.color = [237, 133, 5]));
 
+hireme.thetaY = 180;
+hireme.translate.y = 50;
+
 export default hireme;

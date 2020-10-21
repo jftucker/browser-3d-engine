@@ -3,7 +3,7 @@ import hireme from "./assets/hireme.js";
 import { Vec3d } from "./structures/Vec3d.js";
 import { Camera } from "./camera.js";
 import { config } from "./config.js";
-import { configureCanvas, render } from "./utils.js";
+import { configureCanvas } from "./utils.js";
 import { Rasterizer } from "./rasterizer.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ...config.CAMERA.STARTING_ORIENTATION,
     config.CAMERA.STARTING_LOOK_DIRECTION
   );
-  const light = new Vec3d(-0.4, 0.5, -0.4);
+  const light = new Vec3d(0.7, 0.3, 0);
   const canvas = configureCanvas("canvas");
   const objects = [mountains, hireme];
 
