@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ...config.CAMERA.STARTING_ORIENTATION,
     config.CAMERA.STARTING_LOOK_DIRECTION
   );
-  const light = new Vec3d(0.7, 0.3, 0);
+  const light = new Vec3d(...config.LIGHTS.GLOBAL_LIGHT_SOURCE);
   const canvas = configureCanvas("canvas");
   const objects = [mountains, hireme];
 

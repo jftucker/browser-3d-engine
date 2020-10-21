@@ -27,4 +27,7 @@ export const config = {
     STARTING_LOOK_DIRECTION: [-0.76, 0.29, 0.58],
   },
   MILLISECONDS_PER_FRAME: 1000 / 60,
+  LIGHTS: {
+    GLOBAL_LIGHT_SOURCE: [0.7, 0.3, 0],
+  },
 };

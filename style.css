@@ -3,14 +3,41 @@ canvas {
 }
 
 body {
-  font-family: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode",
-    "Lucida Sans", sans-serif;
+  font-family: "Lucida Console", Monaco, monospace;
   margin: 0;
 }
 
 .container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   z-index: 2;
   position: fixed;
+}
+
+.text-box {
+  margin: 5px;
+  padding: 5px;
+  border: orange;
+  border-style: solid;
+  background: rgba(235, 207, 118, 0.3);
+}
+
+span {
+  color: rgb(65, 34, 0);
+}
+
+a {
+  color: rgb(223, 119, 0);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+a:visited {
+  color: rgb(170, 91, 0);
+  text-decoration: none;
 }
