@@ -4,21 +4,21 @@ import { Mat4x4 } from "./Mat4x4.js";
 import { config } from "../config.js";
 
 export class Mesh {
-  constructor(tris) {
-    this.tris = tris;
-  }
-
-  render({
-    camera,
-    light,
-    canvas,
+  constructor(
+    tris = [],
     thetaX = 0,
     thetaY = 0,
     thetaZ = 0,
-    translate = new Vec3d(0, 0, 0),
-  }) {
-    camera.update();
+    translate = new Vec3d(0, 0, 0)
+  ) {
+    this.tris = tris;
+    this.thetaX = thetaX;
+    this.thetaY = thetaY;
+    this.thetaZ = thetaZ;
+    this.translate = translate;
+  }
 
+  render({ camera, light, canvas, trisToRaster }) {
     const projection = Mat4x4.makeProjection(
       config.FOV,
       config.CANVAS.HEIGHT / config.CANVAS.WIDTH,
@@ -27,10 +27,10 @@ export class Mesh {
     );
 
     const worldMatrix = Mat4x4.makeIdentity()
-      .matrixMult(Mat4x4.makeRotationX(thetaX))
-      .matrixMult(Mat4x4.makeRotationY(thetaY))
-      .matrixMult(Mat4x4.makeRotationZ(thetaZ))
-      .matrixMult(Mat4x4.makeTranslation(translate));
+      .matrixMult(Mat4x4.makeRotationX(this.thetaX))
+      .matrixMult(Mat4x4.makeRotationY(this.thetaY))
+      .matrixMult(Mat4x4.makeRotationZ(this.thetaZ))
+      .matrixMult(Mat4x4.makeTranslation(this.translate));
 
     let target = new Vec3d(...config.FORWARD_DIR);
 
@@ -40,12 +40,6 @@ export class Mesh {
 
     const matCamera = Mat4x4.PointAt(camera.position, target, camera.up);
     const matView = Mat4x4.quickInverse(matCamera);
-
-    canvas
-      .getContext("2d")
-      .clearRect(0, 0, config.CANVAS.WIDTH, config.CANVAS.HEIGHT);
-
-    const trisToRaster = [];
 
     this.tris.forEach(tri => {
       const triTransformed = tri.transform(worldMatrix);
@@ -99,8 +93,5 @@ export class Mesh {
         });
       }
     });
-
-    trisToRaster.sort((a, b) => b.depth() - a.depth());
-    trisToRaster.forEach(tri => draw(tri, canvas));
   }
 }

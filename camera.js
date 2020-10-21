@@ -4,21 +4,29 @@ import { config } from "./config.js";
 import { command } from "./interface.js";
 
 export class Camera {
-  constructor(x, y, z, roll = 0, pitch = 0, yaw = 0) {
+  constructor(
+    x,
+    y,
+    z,
+    roll = 0,
+    pitch = 0,
+    yaw = 0,
+    lookDir = config.FORWARD_DIR
+  ) {
     this.position = new Vec3d(x, y, z);
     this.roll = roll;
     this.pitch = pitch;
     this.yaw = yaw;
-    this.lookDir = new Vec3d(...config.FORWARD_DIR);
+    this.lookDir = new Vec3d(...lookDir);
     this.up = new Vec3d(...config.UP_DIR);
     this.target = new Vec3d(...config.FORWARD_DIR);
     this.attachControls();
   }
 
   attachControls() {
-    document.addEventListener("keydown", command(this));
-    document.addEventListener("keyup", command(this));
-    document.addEventListener("mousemove", command(this));
+    ["keydown", "keyup", "mousemove"].forEach(item => {
+      document.addEventListener(item, command(this));
+    });
   }
 
   look(target) {

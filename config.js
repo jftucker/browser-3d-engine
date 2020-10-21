@@ -1,15 +1,11 @@
 export const config = {
-  KEYMAP: {
-    A: 65,
-    S: 83,
-    D: 68,
-    W: 87,
-    UP: 38,
-    DOWN: 40,
-    LEFT: 37,
-    RIGHT: 39,
-    SPACE: 32,
-    SHIFT: 16,
+  INPUT: {
+    KeyA: "moveLeft",
+    Space: "moveUp",
+    KeyD: "moveRight",
+    ShiftLeft: "moveDown",
+    KeyW: "moveForward",
+    KeyS: "moveBackward",
   },
   VELOCITY: 0.3,
   MOUSE_INPUT_SCALING: {
@@ -23,8 +19,12 @@ export const config = {
   ZFAR: 1000,
   CANVAS: {
     WIDTH: window.innerWidth,
-    HEIGHT: window.innerHeight - 150,
+    HEIGHT: window.innerHeight,
   },
-  CAMERA: { STARTING_POSITION: [0, 0, -5] },
+  CAMERA: {
+    STARTING_POSITION: [59.8, 7.6, -36.5],
+    STARTING_ORIENTATION: [0, 0, 0.89],
+    STARTING_LOOK_DIRECTION: [-0.76, 0.29, 0.58],
+  },
   MILLISECONDS_PER_FRAME: 1000 / 60,
 };

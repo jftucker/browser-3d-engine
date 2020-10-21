@@ -1,22 +1,22 @@
 import { config } from "./config.js";
-function isPressed(e) {
+
+function handleKeyboard(e) {
   return e.type === "keydown";
 }
 
-const INPUT = {
-  [config.KEYMAP.A]: "moveLeft",
-  [config.KEYMAP.SPACE]: "moveUp",
-  [config.KEYMAP.D]: "moveRight",
-  [config.KEYMAP.SHIFT]: "moveDown",
-  [config.KEYMAP.W]: "moveForward",
-  [config.KEYMAP.S]: "moveBackward",
-};
+function isKeyboard(e) {
+  return e.type === "keydown" || e.type === "keyup";
+}
+
+function isMouse(e) {
+  return e.type === "mousemove";
+}
 
 export function command(camera) {
   return e => {
-    if (e.type === "keydown" || e.type === "keyup") {
-      camera[INPUT[e.keyCode]] = isPressed(e);
-    } else if (e.type === "mousemove") {
+    if (isKeyboard(e)) {
+      camera[config.INPUT[e.code]] = handleKeyboard(e);
+    } else if (isMouse(e)) {
       camera.rotate(e);
     }
   };

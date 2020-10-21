@@ -100,6 +100,6 @@ export class Triangle {
   }
 
   isVisibleTo(vect) {
-    return this.normal().dot(this.points[0].normalize().sub(vect)) < 0;
+    return this.normal().dot(this.points[0].sub(vect)) < 0;
   }
 }
