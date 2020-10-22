@@ -18,8 +18,8 @@ export const config = {
   ZNEAR: 0.1,
   ZFAR: 1000,
   CANVAS: {
-    WIDTH: window.innerWidth,
-    HEIGHT: window.innerHeight,
+    WIDTH: window.innerWidth + 1,
+    HEIGHT: window.innerHeight + 1,
   },
   CAMERA: {
     STARTING_POSITION: [59.8, 7.6, -36.5],
@@ -30,4 +30,5 @@ export const config = {
   LIGHTS: {
     GLOBAL_LIGHT_SOURCE: [0.7, 0.3, 0],
   },
+  COLORS: { SKY_LIGHT: "#65a6f0", SKY_DARK: "blue" },
 };
