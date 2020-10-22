@@ -1,9 +1,10 @@
 import { Vec3d } from "./Vec3d.js";
 
 export class Triangle {
-  constructor(p0 = 0, p1 = 0, p2 = 0, color = [190, 190, 190]) {
+  constructor(p0 = 0, p1 = 0, p2 = 0, color = [190, 190, 190], lum = 0) {
     this.points = [p0, p1, p2];
     this.color = color;
+    this.lum = lum;
   }
 
   clipAgainstPlane({ planePosition, planeNormal }) {
@@ -37,7 +38,7 @@ export class Triangle {
         insidePoints[0],
         outsidePoints[1]
       );
-      tris.push(new Triangle(p0, p1, p2, this.color));
+      tris.push(new Triangle(p0, p1, p2, this.color, this.lum));
     }
 
     if (insidePoints.length === 2 && outsidePoints.length == 1) {
@@ -50,7 +51,7 @@ export class Triangle {
         insidePoints[0],
         outsidePoints[0]
       );
-      tris.push(new Triangle(p0, p1, p2, this.color));
+      tris.push(new Triangle(p0, p1, p2, this.color, this.lum));
 
       p2 = Vec3d.intersectPlane(
         planePosition,
@@ -58,7 +59,7 @@ export class Triangle {
         insidePoints[1],
         outsidePoints[0]
       );
-      tris.push(new Triangle(p1, tris[0].points[2], p2, this.color));
+      tris.push(new Triangle(p1, tris[0].points[2], p2, this.color, this.lum));
     }
 
     return tris;
@@ -80,11 +81,11 @@ export class Triangle {
   transform(matrix) {
     let pointsTransformed = this.points.map(point => matrix.vectorMult(point));
 
-    return new Triangle(...pointsTransformed, this.color);
+    return new Triangle(...pointsTransformed, this.color, this.lum);
   }
 
   scaleToView(width, height) {
-    const scaledTri = new Triangle(0, 0, 0, this.color);
+    const scaledTri = new Triangle(0, 0, 0, this.color, this.lum);
     const OffsetView = new Vec3d(1, 1, 0);
 
     scaledTri.points = this.points.map(point =>

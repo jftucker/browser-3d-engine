@@ -18,8 +18,8 @@ export const config = {
   ZNEAR: 0.1,
   ZFAR: 1000,
   CANVAS: {
-    WIDTH: window.innerWidth + 1,
-    HEIGHT: window.innerHeight + 1,
+    WIDTH: window.innerWidth,
+    HEIGHT: window.innerHeight,
   },
   CAMERA: {
     STARTING_POSITION: [59.8, 7.6, -36.5],
