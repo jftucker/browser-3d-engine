@@ -43,6 +43,13 @@ export function configureCanvas(canvasId) {
   return canvas;
 }
 
+export function configureDocument() {
+  function toggleVisibility() {
+    document.querySelector(".why").classList.toggle("collapsed");
+  }
+  document.toggleVisibility = toggleVisibility;
+}
+
 export const render = rasterizer => {
   rasterizer.camera.update();
 

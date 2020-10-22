@@ -1,20 +1,11 @@
-import mountains from "./assets/mountains.js";
-import hireme from "./assets/hireme.js";
+import { assets } from "./assets/assets.js";
 import { Vec3d } from "./structures/Vec3d.js";
 import { Camera } from "./camera.js";
 import { config } from "./config.js";
-import { configureCanvas } from "./utils.js";
+import { configureCanvas, configureDocument } from "./utils.js";
 import { Rasterizer } from "./rasterizer.js";
 
-function toggleVisibility(id) {
-  const element = document.getElementById(id);
-
-  element.style.display === "block"
-    ? (element.style.display = "none")
-    : (element.style.display = "block");
-}
-
-document.toggleVisibility = toggleVisibility;
+configureDocument();
 
 document.addEventListener("DOMContentLoaded", () => {
   const camera = new Camera(
@@ -24,9 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   const light = new Vec3d(...config.LIGHTS.GLOBAL_LIGHT_SOURCE);
   const canvas = configureCanvas("canvas");
-  const objects = [mountains, hireme];
 
-  const rasterizer = new Rasterizer(camera, light, canvas, objects);
+  const rasterizer = new Rasterizer(camera, light, canvas, assets);
 
   setInterval(Rasterizer.render, config.MILLISECONDS_PER_FRAME, rasterizer);
 });

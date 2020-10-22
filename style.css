@@ -3,6 +3,7 @@ canvas {
 }
 
 body {
+  background-color: blue;
   font-family: "Lucida Console", Monaco, monospace;
   margin: 0;
 }
@@ -16,16 +17,39 @@ body {
 }
 
 .text-box {
-  margin: 10px;
-  padding: 10px;
+  font-size: medium;
+  margin: 5px;
+  padding: 5px;
   border: orange;
   border-style: solid;
   background: rgba(255, 249, 227, 0.774);
 }
 
+p {
+  padding: 0px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
 span {
-  padding: 7px;
+  overflow: auto;
+  padding: 5px;
   color: rgb(65, 34, 0);
+  height: auto;
+  display: block;
+  transition: max-height 0.75s ease-in-out;
+}
+
+span.collapsible {
+  right: -17px;
+  max-height: 550px;
+  max-width: 800px;
+  box-sizing: content-box;
+}
+
+span.collapsed {
+  overflow: hidden;
+  max-height: 0;
 }
 
 a {
@@ -45,4 +69,9 @@ a:visited {
 
 #why {
   display: none;
+}
+
+::-webkit-scrollbar {
+  width: 0px; /* Remove scrollbar space */
+  background: transparent; /* Optional: just make scrollbar invisible */
 }
