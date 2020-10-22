@@ -19,7 +19,7 @@ body {
 .text-box {
   font-size: medium;
   margin: 5px;
-  padding: 5px;
+  padding: 20px;
   border: orange;
   border-style: solid;
   background: rgba(255, 249, 227, 0.774);
