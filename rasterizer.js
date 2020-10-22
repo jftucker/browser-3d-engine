@@ -46,9 +46,7 @@ export class Rasterizer {
     rasterizer.camera.update();
     rasterizer.clearCanvas();
     rasterizer.generateBg();
-
     rasterizer.objects.forEach(obj => obj.render(rasterizer));
-
     rasterizer.rasterize();
   }
 }
