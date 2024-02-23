@@ -1,0 +1,1 @@
+This is a browser based 3D engine which I wrote in about one week. It is intentionally without comments to demonstrate the clarity of code that I write. In a professional setting I would be much less strict about ommitting comments. There are zero import statements, the scene is rendered in browser using the HTML canvas and a custom triangle drawing method.
